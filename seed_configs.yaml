@@ -1,0 +1,37 @@
+
+NO_SEEDS: []
+
+RANDOM:
+  - random.seed
+
+NUMPY:
+  - numpy.random.seed
+  - numpy.random.default_rng
+
+TENSORFLOW:
+  - tensorflow.random.set_seed
+  - tensorflow.compat.v1.set_random_seed
+  - tensorflow.keras.utils.set_random_seed
+
+TORCH:
+  - torch.seed
+  - torch.manual_seed
+  - torch.cuda.seed
+  - torch.cuda.seed_all
+  - torch.cuda.manual_seed
+  - torch.cuda.manual_seed_all
+
+ALL_SEEDS:
+  - random.seed
+  - numpy.random.seed
+  - numpy.random.default_rng
+  - numpy.random.RandomState.seed
+  - tensorflow.random.set_seed
+  - tensorflow.compat.v1.set_random_seed
+  - tensorflow.keras.utils.set_random_seed
+  - torch.seed
+  - torch.manual_seed
+  - torch.cuda.seed
+  - torch.cuda.seed_all
+  - torch.cuda.manual_seed
+  - torch.cuda.manual_seed_all
