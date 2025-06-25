@@ -75,41 +75,32 @@ python3 Distributions.py sample_csv --csv-in test_csvs/lightning_assertions_m1.c
     --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
 ```
 
-
-
-
-
-
-
-
-
-misc commands (not required):
+G2 commands:
 ```bash
-python3 << 'EOF'
-from Sampler import run_pytest
-LOGGED_PATH         = "lightning_repo/tests/tests_pytorch/core/test_datamodules_168.py"
-CLASS               = ""
-TEST                = "test_train_loop_only"
-repo_name           = "lightning_repo"
-seed_value          = 42
-seed_config_name    = "RANDOM,NUMPY,TORCH"
-seed_config_file    = "../seed_configs.yaml"
-result = run_pytest(
-    LOGGED_PATH,
-    CLASS,
-    TEST,
-    repo_name,
-    seed_value,
-    seed_config_name,
-    seed_config_file
-)
-print(result)
-EOF
+ssh sm2939@g2-login-01.coecis.cornell.edu
+module load singularity/3.7
 
-python3 << 'EOF'
-from Distributions import sample_test
-test_input = {'LOGGED_PATH': "lightning_repo/tests/tests_pytorch/core/test_datamodules_168.py", 'CLASS': "", 'TEST': "test_train_loop_only",
-'repo_name': "lightning_repo", 'seed_value': 42, 'seed_config_name': "RANDOM,NUMPY,TORCH", 'seed_config_file': "../seed_configs.yaml"}
-sample_test(test_input, foldername="misc_dists", trials=12, save_plot=True)
-EOF
+
+git clone git@github.com:sumaddury/BURE_Job_Code.git
+cd BURE_Job_Code
+
+singularity build --fakeroot pl_pipeline.sif containers/Dockerfile
+
+mkdir -p /share/$USER/containers
+mv pl_pipeline.sif /share/$USER/containers/
+
+jid1=$(sbatch \
+  --job-name=pl_stage1 \
+  --cpus-per-task=1 --ntasks=4 --mem=8G --time=06:00:00 \
+  --gres=gpu:0 \
+  --export=ALL,IMG=/share/$USER/containers/pl_pipeline.sif \
+  jobs/stage1.sub | awk '{print $4}')s
+
+sbatch \
+  --job-name=pl_sample \
+  --dependency=afterok:$jid1 \
+  --cpus-per-task=1 --ntasks=4 --mem=8G --time=06:00:00 \
+  --gres=gpu:0 \
+  --export=ALL,IMG=/share/$USER/containers/pl_pipeline.sif,DEP_JOB_ID=$jid1 \
+  jobs/sample_array.sub
 ```

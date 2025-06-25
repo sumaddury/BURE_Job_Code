@@ -14,6 +14,8 @@ python3 Distributions.py sample_csv \
     --csv-in test_csvs/lightning_assertions_m1.csv \
     --dir-out lightning_dists \
     --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
+    --trials 1000 \
+    --workers 4 \
     --repo-name lightning_repo \
     --seed-value 42 \
     --seed-config-file-in seed_configs.yaml \
