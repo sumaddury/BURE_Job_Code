@@ -91,7 +91,7 @@ mv pl_pipeline.sif /share/$USER/containers/
 
 jid1=$(sbatch \
   --job-name=pl_stage1 \
-  --cpus-per-task=1 --ntasks=4 --mem=8G --time=06:00:00 \
+  --cpus-per-task=1 --ntasks=8 --mem=8G --time=06:00:00 \
   --gres=gpu:0 \
   --export=ALL,IMG=/share/$USER/containers/pl_pipeline.sif \
   jobs/stage1.sub | awk '{print $4}')s
@@ -99,7 +99,7 @@ jid1=$(sbatch \
 sbatch \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --cpus-per-task=1 --ntasks=4 --mem=8G --time=06:00:00 \
+  --cpus-per-task=1 --ntasks=8 --mem=8G --time=06:00:00 \
   --gres=gpu:0 \
   --export=ALL,IMG=/share/$USER/containers/pl_pipeline.sif,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub
