@@ -28,7 +28,7 @@ Indexes to run:
 commands:
 ```bash
 
-rm -rf lightning_repo
+# rm -rf lightning_repo
 mkdir -p ast_dir
 python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
     --clone-dir lightning_repo \
@@ -39,16 +39,16 @@ python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
     --csv-target test_csvs/lightning_assertions.csv \
     --funcs-out ast_dir/lightning_funcs.pkl
 
-deactivate
-rm -rf .venv
+# deactivate
+# rm -rf .venv
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements_custom.txt
 
-cd lightning_repo
-make test
-cd ..
+# cd lightning_repo
+# make test
+# cd ..
 
 pip freeze > constraints.txt
 pip install -r script_reqs.txt \
@@ -63,11 +63,11 @@ python3 Instrumentor.py log --csv-in test_csvs/lightning_assertions.csv \
 
 cp conftest.py lightning_repo/
 
-rm -rf lightning_dists
+# rm -rf lightning_dists
 mkdir -p lightning_dists
 
 python3 Distributions.py sample_csv --csv-in test_csvs/lightning_assertions_m1.csv \
-    --dir-out example_dists \
+    --dir-out lightning_dists \
     --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
     --repo-name lightning_repo \
     --seed-value 42 \

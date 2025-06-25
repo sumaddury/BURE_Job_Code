@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name=pl_sample
+#SBATCH --output=logs/sample_%A_%a.out
+
+set -euo pipefail
+
+work=/scratch/$USER/${DEP_JOB_ID:-UNKNOWN}
+cd "$work"
+source .venv/bin/activate
+
+mkdir -p lightning_dists
+
+python3 Distributions.py sample_csv \
+    --csv-in test_csvs/lightning_assertions_m1.csv \
+    --dir-out lightning_dists \
+    --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
+    --repo-name lightning_repo \
+    --seed-value 42 \
+    --seed-config-file-in seed_configs.yaml \
+    --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
