@@ -75,19 +75,27 @@ python3 Distributions.py sample_csv --csv-in test_csvs/lightning_assertions_m1.c
     --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
 ```
 
+Building:
+```bash
+docker build -t cygenta123/pl-pipeline:latest -f containers/Dockerfile .
+docker login
+docker push cygenta123/pl-pipeline:latest
+
+```
 G2 commands:
 ```bash
 ssh sm2939@g2-login.coecis.cornell.edu
-module load singularity/3.7
 
-
-git clone git@github.com:sumaddury/BURE_Job_Code.git
+git clone https://github.com/sumaddury/BURE_Job_Code.git
 cd BURE_Job_Code
-
-singularity build --fakeroot pl_pipeline.sif containers/Dockerfile
+sbatch jobs/convert.sub \
+  cygenta123/pl-pipeline:latest \
+  flaky-sandbox
 
 mkdir -p /share/$USER/containers
-mv pl_pipeline.sif /share/$USER/containers/
+mv pl-pipeline.sif /share/$USER/containers/
+mv flaky-sandbox      /share/$USER/containers/
+
 
 jid1=$(sbatch \
   --job-name=pl_stage1 \

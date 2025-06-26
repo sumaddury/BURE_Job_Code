@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH --job-name=docker-to-singularity
+#SBATCH --ntasks=1
+#SBATCH --mem=16g
+#SBATCH --time=4:00:00
+#SBATCH --partition=dutta
+#SBATCH --output=output.log
+
+# Exit on any error
+set -e  
+
+# Path to Singularity binary on G2
+export PATH=$PATH:/share/apps/singularity/3.7.0/bin
+
+# Read command-line arguments
+IMAGE="$1"
+sandbox_dir="$2"
+
+# Check for missing arguments
+if [ -z "$IMAGE" ] || [ -z "$sandbox_dir" ]; then
+    echo "Usage: sbatch convert.sub <docker-image> <sandbox-dir>"
+    exit 1
+fi
+
+IMAGENAME="${IMAGE##*/}"
+IMAGENAME="${IMAGENAME%%:*}"
+
+# Check Singularity installation
+if ! command -v singularity &>/dev/null; then
+    echo "Error: Singularity is not installed on this system."
+    exit 1
+fi
+
+echo "Singularity is installed, proceeding..."
+
+# Conversion to a Singularity image format (.sif) 
+if [ ! -f "${IMAGENAME}.sif" ]; then
+    echo "Pulling image from Docker Hub..."
+    singularity pull "${IMAGENAME}.sif" "docker://${IMAGE}"
+fi
+
+# Building a container environment ("sandbox")
+if [ ! -d "$sandbox_dir" ]; then
+    echo "Building sandbox directory..."
+    singularity build --sandbox "$sandbox_dir" "${IMAGENAME}.sif"
+fi
