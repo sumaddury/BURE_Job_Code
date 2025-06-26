@@ -77,7 +77,7 @@ python3 Distributions.py sample_csv --csv-in test_csvs/lightning_assertions_m1.c
 
 G2 commands:
 ```bash
-ssh sm2939@g2-login-01.coecis.cornell.edu
+ssh sm2939@g2-login.coecis.cornell.edu
 module load singularity/3.7
 
 

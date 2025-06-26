@@ -19,4 +19,4 @@ python3 Distributions.py sample_csv \
     --repo-name lightning_repo \
     --seed-value 42 \
     --seed-config-file-in seed_configs.yaml \
-    --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
+    --seed-config-names "NO_SEEDS;RANDOM,NUMPY;RANDOM,NUMPY,TORCH"
