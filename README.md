@@ -77,9 +77,13 @@ python3 Distributions.py sample_csv --csv-in test_csvs/lightning_assertions_m1.c
 
 Building:
 ```bash
-docker build -t cygenta123/pl-pipeline:latest -f containers/Dockerfile .
 docker login
-docker push cygenta123/pl-pipeline:latest
+docker buildx create --use
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --push \
+  -t cygenta123/pl-pipeline:latest \
+  -f containers/Dockerfile .
 
 ```
 G2 commands:
@@ -88,26 +92,33 @@ ssh sm2939@g2-login.coecis.cornell.edu
 
 git clone https://github.com/sumaddury/BURE_Job_Code.git
 cd BURE_Job_Code
-sbatch jobs/convert.sub \
-  cygenta123/pl-pipeline:latest \
-  flaky-sandbox
+sbatch jobs/convert.sub cygenta123/pl-pipeline:latest flaky-sandbox
 
-mkdir -p /share/$USER/containers
-mv pl-pipeline.sif /share/$USER/containers/
-mv flaky-sandbox      /share/$USER/containers/
 
+mkdir -p /share/dutta/$USER/containers
+mv pl-pipeline.sif     /share/dutta/$USER/containers/
+mv flaky-sandbox/      /share/dutta/$USER/containers/
+
+sinfo -p dutta -o "%n %C %m"
 
 jid1=$(sbatch \
+  --partition=dutta \
   --job-name=pl_stage1 \
-  --cpus-per-task=2 --ntasks=1 --mem=4G --time=06:00:00 \
-  --export=ALL,IMG=/share/$USER/containers/pl_pipeline.sif \
+  --ntasks=1 --cpus-per-task=2 --mem=4G --time=06:00:00 \
+  --output=logs/stage1_%j.out \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif \
   jobs/stage1.sub | awk '{print $4}')
 
+echo "Stage-1 JobID: $jid1"
+
+squeue -u $USER
+sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
+
 sbatch \
+  --partition=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --cpus-per-task=8 --ntasks=1 --mem=8G --time=06:00:00 \
-  --gres=gpu:0 \
-  --export=ALL,OMP_NUM_THREADS=1,MKL_NUM_THREADS=1,IMG=/share/$USER/containers/pl_pipeline.sif,DEP_JOB_ID=$jid1 \
+  --ntasks=1 --cpus-per-task=8 --mem=8G --time=06:00:00 \
+  --export=ALL,OMP_NUM_THREADS=1,MKL_NUM_THREADS=1,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub
 ```

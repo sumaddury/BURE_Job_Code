@@ -12,12 +12,12 @@ cd "$work"
 
 # 2) run the two AssertSpecFinder steps (clones Lightning internally)
 mkdir -p ast_dir
-python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
+singularity exec "$IMG" python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
     --clone-dir lightning_repo \
     --asts-out ast_dir/lightning_asts.pkl
 
 mkdir -p test_csvs
-python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
+singularity exec "$IMG" python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
     --csv-target test_csvs/lightning_assertions.csv \
     --funcs-out ast_dir/lightning_funcs.pkl
 
@@ -30,9 +30,9 @@ pip freeze > constraints.txt
 pip install -r script_reqs.txt --constraint constraints.txt
 
 # 4) seed stripping + instrumentation
-python3 Seeder.py remove_seed --asts-in ast_dir/lightning_asts.pkl
+singularity exec "$IMG" python3 Seeder.py remove_seed --asts-in ast_dir/lightning_asts.pkl
 
-python3 Instrumentor.py log \
+singularity exec "$IMG" python3 Instrumentor.py log \
     --csv-in test_csvs/lightning_assertions.csv \
     --csv-out test_csvs/lightning_assertions_m1.csv \
     --asts-in ast_dir/lightning_asts.pkl \
