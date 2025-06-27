@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-work=/scratch/$USER/${DEP_JOB_ID:-UNKNOWN}
+work=/scratch/$USER/${DEP_JOB_ID}
 cd "$work"
 
 singularity exec \
@@ -13,8 +13,10 @@ singularity exec \
   "$IMG" bash -lc '
     source .venv/bin/activate
 
+    cp conftest.py lightning_repo/
+
     mkdir -p lightning_dists
-    python3 Distributions.py sample_csv \
+    python3 -u Distributions.py sample_csv \
         --csv-in test_csvs/lightning_assertions_m1.csv \
         --dir-out lightning_dists \
         --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
