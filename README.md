@@ -107,7 +107,7 @@ jid1=$(sbatch \
   --job-name=pl_stage1 \
   --ntasks=1 --cpus-per-task=2 --mem=4G --time=06:00:00 \
   --output=logs/stage1_%j.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
   jobs/stage1.sub | awk '{print $4}')
 
 echo "Stage-1 JobID: $jid1"
