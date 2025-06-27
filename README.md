@@ -115,11 +115,15 @@ echo "Stage-1 JobID: $jid1"
 squeue -u $USER
 sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
 
-sbatch \
+jid2=$(sbatch \
   --partition=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 --cpus-per-task=8 --mem=8G --time=06:00:00 \
-  --export=ALL,OMP_NUM_THREADS=1,MKL_NUM_THREADS=1,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,DEP_JOB_ID=$jid1 \
-  jobs/sample_array.sub
+  --output=logs/sample_%A_%a.out \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
+  jobs/sample_array.sub | awk '{print $4}')
+
+  sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
+
 ```
