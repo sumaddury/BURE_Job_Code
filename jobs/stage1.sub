@@ -2,6 +2,7 @@
 #SBATCH --job-name=pl_stage1
 #SBATCH --output=logs/stage1_%j.out
 
+export SINGULARITY_BINDPATH="/scratch:${SLURM_SUBMIT_DIR}:$(dirname "$IMG")"
 export PATH=/share/apps/singularity/3.7.0/bin:$PATH
 
 set -euo pipefail
