@@ -92,6 +92,7 @@ ssh sm2939@g2-login.coecis.cornell.edu
 
 git clone https://github.com/sumaddury/BURE_Job_Code.git
 cd BURE_Job_Code
+mkdir -p logs
 sbatch jobs/convert.sub cygenta123/pl-pipeline:latest flaky-sandbox
 
 
