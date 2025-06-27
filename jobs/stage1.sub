@@ -33,7 +33,7 @@ singularity exec \
     source .venv/bin/activate
     pip install --upgrade pip
     pip install -r requirements_custom.txt
-    pip freeze > constraints.txt
+    pip freeze | grep -v '^-e ' > constraints.txt
     pip install -r script_reqs.txt --constraint constraints.txt
 
     # 4) seed stripping + instrumentation
