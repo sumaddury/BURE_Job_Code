@@ -2,7 +2,6 @@
 #SBATCH --job-name=pl_stage1
 #SBATCH --output=logs/stage1_%j.out
 
-export SINGULARITY_BINDPATH="/scratch:${SLURM_SUBMIT_DIR}:$(dirname "$IMG")"
 export PATH=/share/apps/singularity/3.7.0/bin:$PATH
 
 set -euo pipefail
@@ -15,12 +14,18 @@ cd "$work"
 
 # 2) run the two AssertSpecFinder steps (clones Lightning internally)
 mkdir -p ast_dir
-singularity exec "$IMG" python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
+singularity exec \
+  --bind "${work}:${work}" \
+  "$IMG" bash -lc "cd ${work} && \
+   python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
     --clone-dir lightning_repo \
     --asts-out ast_dir/lightning_asts.pkl
 
 mkdir -p test_csvs
-singularity exec "$IMG" python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
+singularity exec \
+  --bind "${work}:${work}" \
+  "$IMG" bash -lc "cd ${work} && \
+   python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
     --csv-target test_csvs/lightning_assertions.csv \
     --funcs-out ast_dir/lightning_funcs.pkl
 
@@ -33,9 +38,15 @@ pip freeze > constraints.txt
 pip install -r script_reqs.txt --constraint constraints.txt
 
 # 4) seed stripping + instrumentation
-singularity exec "$IMG" python3 Seeder.py remove_seed --asts-in ast_dir/lightning_asts.pkl
+singularity exec \
+  --bind "${work}:${work}" \
+  "$IMG" bash -lc "cd ${work} && \
+   python3 Seeder.py remove_seed --asts-in ast_dir/lightning_asts.pkl
 
-singularity exec "$IMG" python3 Instrumentor.py log \
+singularity exec \
+  --bind "${work}:${work}" \
+  "$IMG" bash -lc "cd ${work} && \
+   python3 Instrumentor.py log \
     --csv-in test_csvs/lightning_assertions.csv \
     --csv-out test_csvs/lightning_assertions_m1.csv \
     --asts-in ast_dir/lightning_asts.pkl \
