@@ -2,6 +2,8 @@
 #SBATCH --job-name=pl_stage1
 #SBATCH --output=logs/stage1_%j.out
 
+export PATH=/share/apps/singularity/3.7.0/bin:$PATH
+
 set -euo pipefail
 
 # 1) stage the repo into fast node-local scratch

@@ -2,6 +2,8 @@
 #SBATCH --job-name=pl_sample
 #SBATCH --output=logs/sample_%A_%a.out
 
+export PATH=/share/apps/singularity/3.7.0/bin:$PATH
+
 set -euo pipefail
 
 work=/scratch/$USER/${DEP_JOB_ID:-UNKNOWN}
