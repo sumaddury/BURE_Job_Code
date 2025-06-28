@@ -19,6 +19,7 @@ singularity exec \
 
     cp -n conftest.py lightning_repo/
 
+    rm -rf lightning_dists
     mkdir -p lightning_dists
     python3 -u Distributions.py sample_csv \
         --csv-in test_csvs/lightning_assertions_m1.csv \
