@@ -112,6 +112,8 @@ jid1=$(sbatch \
 
 echo "Stage-1 JobID: $jid1"
 
+# Stage-1 JobID: 8354422
+
 squeue -u $USER
 sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
 
@@ -124,6 +126,6 @@ jid2=$(sbatch \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
-  sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
+sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
 
 ```

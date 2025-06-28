@@ -4,16 +4,20 @@
 
 set -euo pipefail
 
-work=/scratch/$USER/${DEP_JOB_ID}
+export work=/scratch/$USER/${DEP_JOB_ID}
+export PYTHONUNBUFFERED=1
+export SINGULARITYENV_OMP_NUM_THREADS=1
+export SINGULARITYENV_MKL_NUM_THREADS=1
 cd "$work"
 
 singularity exec \
+  --env PYTHONUNBUFFERED=1 \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
   "$IMG" bash -lc '
     source .venv/bin/activate
 
-    cp conftest.py lightning_repo/
+    cp -n conftest.py lightning_repo/
 
     mkdir -p lightning_dists
     python3 -u Distributions.py sample_csv \
@@ -24,6 +28,6 @@ singularity exec \
         --workers 8 \
         --repo-name lightning_repo \
         --seed-value 42 \
-        --seed-config-file-in seed_configs.yaml \
+        --seed-config-file-in "../seed_configs.yaml" \
         --seed-config-names "NO_SEEDS;RANDOM,NUMPY;RANDOM,NUMPY,TORCH"
 '
