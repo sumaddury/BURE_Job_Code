@@ -105,7 +105,7 @@ sinfo -p dutta -o "%n %C %m"
 jid1=$(sbatch \
   --partition=dutta \
   --job-name=pl_stage1 \
-  --ntasks=1 --cpus-per-task=2 --mem=4G --time=06:00:00 \
+  --ntasks=1 --cpus-per-task=2 --mem=4G --gres=gpu:1 --time=06:00:00 \
   --output=logs/stage1_%j.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
   jobs/stage1.sub | awk '{print $4}')
@@ -119,6 +119,7 @@ echo "Stage-1 JobID: $jid1"
 squeue -u $USER
 sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
 
+#cpu
 jid2=$(sbatch \
   --partition=dutta \
   --job-name=pl_sample \
@@ -128,7 +129,33 @@ jid2=$(sbatch \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
+#gpu
+jid2=$(sbatch \
+  --partition=dutta \
+  --job-name=pl_sample \
+  --dependency=afterok:$jid1 \
+  --ntasks=8 \
+  --gres=gpu:1 \
+  --cpus-per-task=1 \
+  --mem=8G --time=06:00:00 \
+  --output=logs/sample_%A_%a.out \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
+  jobs/sample_array.sub | awk '{print $4}')
+
 sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
 tail -f logs/sample_$jid2.out
+
+jid3=$(sbatch \
+  --partition=dutta \
+  --job-name=pl_aggregate \
+  --dependency=afterok:$jid2 \
+  --ntasks=1 \
+  --cpus-per-task=1 \
+  --mem=4G \
+  --time=00:30:00 \
+  --output=logs/aggregate_%j.out \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
+  jobs/aggregate.sub | awk '{print $4}')
+echo "Aggregate JobID: $jid3"
 
 ```

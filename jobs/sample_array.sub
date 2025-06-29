@@ -1,14 +1,22 @@
 #!/bin/bash
-#SBATCH --job-name=pl_sample
-#SBATCH --output=logs/sample_%A_%a.out
+#SBATCH --output=logs/sample_%A_%t.out
 
 set -euo pipefail
+
+TOTAL_TRIALS=${TOTAL_TRIALS:-1000}
+WORKERS=${WORKERS:-1}
 
 export work=/scratch/$USER/${DEP_JOB_ID}
 export PYTHONUNBUFFERED=1
 export SINGULARITYENV_OMP_NUM_THREADS=1
 export SINGULARITYENV_MKL_NUM_THREADS=1
 cd "$work"
+
+TASK_ID=${SLURM_PROCID:-0}
+NUM_TASKS=${SLURM_NTASKS:-1}
+TRIALS_PER=$(( TOTAL_TRIALS / NUM_TASKS ))
+
+OUTDIR=lightning_worker/${TASK_ID}
 
 singularity exec --nv \
   --env PYTHONUNBUFFERED=1 \
@@ -20,14 +28,14 @@ singularity exec --nv \
 
     cp -n conftest.py lightning_repo/
 
-    rm -rf lightning_dists
-    mkdir -p lightning_dists
+    rm -rf '"$OUTDIR"'
+    mkdir -p '"$OUTDIR"'
     python3 -u Distributions.py sample_csv \
         --csv-in test_csvs/lightning_assertions_m1.csv \
-        --dir-out lightning_dists \
+        --dir-out '"$OUTDIR"' \
         --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
-        --trials 1000 \
-        --workers 8 \
+        --trials '"$TRIALS_PER"' \
+        --workers '"$WORKERS"' \
         --repo-name lightning_repo \
         --seed-value 42 \
         --seed-config-file-in "../seed_configs.yaml" \

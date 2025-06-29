@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=pl_aggregate
+#SBATCH --output=logs/aggregate_%j.out
+
+set -euo pipefail
+
+export work=/scratch/$USER/${DEP_JOB_ID}
+cd "$work"
+
+# 2) Run the aggregator inside your SIF, in that directory
+singularity exec --nv \
+  --env PYTHONUNBUFFERED=1 \
+  --bind "${work}:${work}" \
+  --pwd  "${work}" \
+  "$IMG" bash -lc '
+    source .venv/bin/activate
+
+    # (A) --workers-dir is the directory holding all worker_* subfolders
+    # (B) --out-dir    is the new, sibling dists folder
+    python Aggregator.py aggregate \
+      --workers-dir lightning_worker \
+      --out-dir     lightning_worker_dists
+'
