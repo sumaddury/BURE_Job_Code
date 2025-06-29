@@ -10,8 +10,9 @@ export SINGULARITYENV_OMP_NUM_THREADS=1
 export SINGULARITYENV_MKL_NUM_THREADS=1
 cd "$work"
 
-singularity exec \
+singularity exec --nv \
   --env PYTHONUNBUFFERED=1 \
+  --env PL_TEST_DEVICE=cuda \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
   "$IMG" bash -lc '

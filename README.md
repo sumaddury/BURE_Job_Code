@@ -112,7 +112,9 @@ jid1=$(sbatch \
 
 echo "Stage-1 JobID: $jid1"
 
-# Stage-1 JobID: 8354422
+# Stage-1 JobID: 8354444
+
+# Sample array ID: 8354445
 
 squeue -u $USER
 sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
@@ -121,11 +123,12 @@ jid2=$(sbatch \
   --partition=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --ntasks=1 --cpus-per-task=8 --mem=8G --time=06:00:00 \
+  --ntasks=1 --cpus-per-task=2 --mem=8G --gres=gpu:1 --time=06:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
 sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
+tail -f logs/sample_$jid2.out
 
 ```
