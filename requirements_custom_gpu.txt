@@ -150,7 +150,8 @@ pytest-rerunfailures==15.1
 pytest-timeout==2.4.0
 python-dateutil==2.9.0.post0
 python-json-logger==3.3.0
--e git+https://github.com/Lightning-AI/pytorch-lightning.git@afa7d56eb7d6566af1bacc644435b7bde2e50487#egg=pytorch_lightning
+# -e git+https://github.com/Lightning-AI/pytorch-lightning.git@afa7d56eb7d6566af1bacc644435b7bde2e50487#egg=pytorch_lightning
+-e lightning_repo
 pytz==2025.2
 PyYAML==6.0.2
 pyzmq==27.0.0
