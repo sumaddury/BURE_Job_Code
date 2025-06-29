@@ -15,9 +15,7 @@ singularity exec --nv \
   "$IMG" bash -lc '
     source .venv/bin/activate
 
-    # (A) --workers-dir is the directory holding all worker_* subfolders
-    # (B) --out-dir    is the new, sibling dists folder
-    python Aggregator.py aggregate \
+    python3 Aggregator.py aggregate \
       --workers-dir lightning_worker \
-      --out-dir     lightning_worker_dists
+      --out-dir     lightning_dists
 '
