@@ -30,13 +30,8 @@ singularity exec --nv \
 
     source .venv/bin/activate
 
-    if ! python - << 'PY'
-    import torch, sys
-    # exit 0 if CUDA is available, else exit 1
-    sys.exit(0 if torch.cuda.is_available() else 1)
-    PY
-    then
-      echo "ERROR: CUDA is not available—aborting." >&2
+    if ! python3 -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)"; then
+      echo "ERROR: CUDA not available—aborting." >&2
       exit 1
     fi
 
