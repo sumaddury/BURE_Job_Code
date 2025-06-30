@@ -24,9 +24,10 @@ OUTDIR=lightning_dists
 
 # echo "=== TASK ${TASK_ID}/${NUM_TASKS} starting at $(date) ==="
 
+  # --env PL_TEST_DEVICE=cuda \
+
 singularity exec \
   --env PYTHONUNBUFFERED=1 \
-  # --env PL_TEST_DEVICE=cuda \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
   "$IMG" bash -lc '
