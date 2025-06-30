@@ -22,7 +22,7 @@ TRIALS_PER=1000
 OUTDIR=lightning_dists
 # lightning_worker/${TASK_ID}
 
-echo "=== TASK ${TASK_ID}/${NUM_TASKS} starting at $(date) ==="
+# echo "=== TASK ${TASK_ID}/${NUM_TASKS} starting at $(date) ==="
 
 singularity exec \
   --env PYTHONUNBUFFERED=1 \
@@ -30,7 +30,7 @@ singularity exec \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
   "$IMG" bash -lc '
-    echo ">> INSIDE container: Task $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
+    # echo ">> INSIDE container: Task $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
 
     source .venv/bin/activate
 
