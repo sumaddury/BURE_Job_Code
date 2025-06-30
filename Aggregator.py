@@ -44,5 +44,5 @@ if __name__ == "__main__":
 
     args = p.parse_args()
 
-    if args.cmd == "aggregator":
+    if args.cmd == "aggregate":
         aggregate_worker_dists(args.workers_dir, args.out_dir)
