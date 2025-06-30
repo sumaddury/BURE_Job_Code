@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --output=logs/sample_%A_%t.out
+#SBATCH --output=logs/sample_%A.out
 
 set -euo pipefail
 
