@@ -19,3 +19,5 @@ post_analysis.ipynb
 stan_nb.ipynb
 constraints.txt
 analysis/
+lightning_worker_8359917/
+lightning_dists_new/
