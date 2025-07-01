@@ -15,7 +15,7 @@ AD/
 captum_dists/
 lightning_dists/
 lightning_analysis.csv
-post_analysis.ipynb
+preprocessing.ipynb
 stan_nb.ipynb
 constraints.txt
 analysis/
