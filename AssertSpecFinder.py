@@ -86,16 +86,17 @@ class AssertionMiner(ast.NodeVisitor):
                     self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type,node.lineno,snippet))
         self.generic_visit(node)
 
-def compile_project(LINK, TARGET, ):
+def compile_project(LINK, TARGET, test_dirs):
     if Path(TARGET).exists():
         raise FileExistsError(f"'{TARGET}' already exists.")
     cmd = ['git','clone',LINK,TARGET]
     subprocess.run(cmd, check=True, text=True)
     py_trees = {}
-    root = Path(TARGET)
-    for path in root.rglob('*'):
-        if path.is_file() and path.suffix == ".py":
-            py_trees[str(path)] = ast.parse(path.read_text(),filename=str(path))
+    for test_dir in test_dirs:
+        root = Path(TARGET) / test_dir
+        for path in root.rglob('*'):
+            if path.is_file() and path.suffix == ".py":
+                py_trees[str(path)] = ast.parse(path.read_text(),filename=str(path))
     return py_trees
 
 def mine_file(PATH: str, TREE: ast.Module):
@@ -104,12 +105,16 @@ def mine_file(PATH: str, TREE: ast.Module):
     finder.visit(TREE)
     return finder.rows, finder.function_defs
 
-def mine_project(ast_dict, CSV_TARGET):
-    mines = [mine_file(path, ast_dict[path]) for path in ast_dict]
-    rows = [e[0] for e in mines]
-    funcs = {}
-    for i, path in enumerate(ast_dict):
-        funcs[path] = mines[i][1]
+def mine_project(ast_dict, CSV_TARGET, target_folder):
+    paths = list(ast_dict)
+    if target_folder:
+        paths = [
+            p for p in paths
+            if p.split('/', 2)[1] == target_folder
+        ]
+    mines = [mine_file(path, ast_dict[path]) for path in paths]
+    rows   = [result_rows for (result_rows, _) in mines]
+    funcs = { path: mines[i][1] for i, path in enumerate(paths) }
     flat_rows = list(itertools.chain.from_iterable(rows))
     with open(CSV_TARGET, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
@@ -123,24 +128,30 @@ if __name__ == "__main__":
 
     c = sub.add_parser("compile", help="Clone project and build ASTs")
     c.add_argument("--project-link", required=True)
+    c.add_argument("--test-dirs", required=False, default=None)
     c.add_argument("--clone-dir", required=True)
     c.add_argument("--asts-out", required=True)
 
     m = sub.add_parser("mine", help="Mine assertions from ASTs")
     m.add_argument("--asts-in", required=True)
+    m.add_argument("--test-dir", required=True)
     m.add_argument("--csv-target", required=True)
     m.add_argument("--funcs-out", required=True)
 
     args = p.parse_args()
 
     if args.cmd == "compile":
-        asts = compile_project(args.project_link, args.clone_dir)
+        dirs = [""]
+        if args.test_dirs:
+            dirs = [dir.strip() for dir in args.test_dirs.split(',')]
+        asts = compile_project(args.project_link, args.clone_dir, test_dirs=dirs)
         with open(args.asts_out, "wb") as f: pickle.dump(asts, f)
         print(f"ASTs → {args.asts_out}, project → {args.clone_dir}")
 
+
     elif args.cmd == "mine":
         with open(args.asts_in, "rb") as f: asts = pickle.load(f)
-        funcs = mine_project(asts, args.csv_target)
+        funcs = mine_project(asts, args.csv_target, target_folder=args.test_dir)
         with open(args.funcs_out, "wb") as f: pickle.dump(funcs, f)
         print(f"Assertions CSV → {args.csv_target}, Funcs → {args.funcs_out}")
 

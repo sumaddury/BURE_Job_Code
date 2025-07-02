@@ -21,3 +21,8 @@ constraints.txt
 analysis/
 lightning_worker_8359917/
 lightning_dists_new/
+hf/
+transformers_dists/
+transformers_repo/
+example.txt
+removed_seeds.txt

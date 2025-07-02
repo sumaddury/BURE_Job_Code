@@ -12,9 +12,6 @@ TORCH_SEEDS = {"torch.seed", "torch.manual_seed", "torch.set_rng_state",
                "torch.cuda.manual_seed", "torch.cuda.manual_seed_all"}
 TENSORFLOW_SEEDS = {"tensorflow.random.set_seed", "tensorflow.compat.v1.set_random_seed", "tensorflow.keras.utils.set_random_seed"}
 
-# ALIAS_MAP = {}
-# ALL_SEED_APIS = {}
-
 def resolve_func(call_node):
     parts = []
     obj = call_node.func

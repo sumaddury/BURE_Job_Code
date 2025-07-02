@@ -30,23 +30,21 @@ commands:
 
 # rm -rf lightning_repo
 mkdir -p ast_dir
-python3 AssertSpecFinder.py compile --project-link https://github.com/huggingface/transformers.git \
-    --test-dirs "src,tests" \
-    --clone-dir transformers_repo \
-    --asts-out ast_dir/transformers_asts.pkl
+python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
+    --clone-dir lightning_repo \
+    --asts-out ast_dir/lightning_asts.pkl
 
 mkdir -p test_csvs
-python3 AssertSpecFinder.py mine --asts-in ast_dir/transformers_asts.pkl \
-    --test-dir tests \
-    --csv-target test_csvs/transformers_assertions.csv \
-    --funcs-out ast_dir/transformers_funcs.pkl
+python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
+    --csv-target test_csvs/lightning_assertions.csv \
+    --funcs-out ast_dir/lightning_funcs.pkl
 
 # deactivate
 # rm -rf .venv
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -r transformers_custom.txt
+pip install -r requirements_custom.txt
 
 # cd lightning_repo
 # make test
@@ -56,23 +54,22 @@ pip freeze > constraints.txt
 pip install -r script_reqs.txt \
     --constraint constraints.txt
 
-python3 Seeder.py remove_seed --asts-in ast_dir/transformers_asts.pkl
+python3 Seeder.py remove_seed --asts-in ast_dir/lightning_asts.pkl
 
-python3 Instrumentor.py log --csv-in test_csvs/transformers_assertions.csv \
-    --csv-out test_csvs/transformers_assertions_m1.csv \
-    --asts-in ast_dir/transformers_asts.pkl \
-    --funcs-in ast_dir/transformers_funcs.pkl
+python3 Instrumentor.py log --csv-in test_csvs/lightning_assertions.csv \
+    --csv-out test_csvs/lightning_assertions_m1.csv \
+    --asts-in ast_dir/lightning_asts.pkl \
+    --funcs-in ast_dir/lightning_funcs.pkl
 
-cp conftest.py transformers_repo/
+cp conftest.py lightning_repo/
 
 # rm -rf lightning_dists
-mkdir -p transformers_dists
+mkdir -p lightning_dists
 
-python3 Distributions.py sample_csv --csv-in test_csvs/transformers_assertions_m1.csv \
-    --trials 10 \
-    --workers 4 \
-    --dir-out transformers_dists \
-    --repo-name transformers_repo \
+python3 Distributions.py sample_csv --csv-in test_csvs/lightning_assertions_m1.csv \
+    --dir-out lightning_dists \
+    --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
+    --repo-name lightning_repo \
     --seed-value 42 \
     --seed-config-file-in ../seed_configs.yaml \
     --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
