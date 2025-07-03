@@ -39,6 +39,13 @@ class AssertionMiner(ast.NodeVisitor):
                     snippet = ast.get_source_segment(self.source_text, node)
                     assertion_type = "Python assert (<,>,<=,>= threshold)"
                     self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type,node.lineno,snippet))
+        if isinstance(test, ast.Compare) and len(test.ops) == 1 and isinstance(test.ops[0], ast.Eq) and isinstance(test.comparators[0], ast.Call):
+            call = test.comparators[0]
+            if (isinstance(call.func, ast.Name) and call.func.id == "approx") or (isinstance(call.func, ast.Attribute) and call.func.attr == "approx"):
+                lhs_src = ast.get_source_segment(self.source_text, test.left)
+                rhs_src = ast.get_source_segment(self.source_text, call)
+                assertion_type = "pytest.approx"
+                self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type, node.lineno, f"{lhs_src} == {rhs_src}"))
         self.generic_visit(node)
     
     def visit_Call(self, node: ast.Call):
@@ -53,11 +60,6 @@ class AssertionMiner(ast.NodeVisitor):
         if name in UNITTEST_METHODS:
             snippet = ast.get_source_segment(self.source_text, node)
             assertion_type = f"unittest.{name}"
-            self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type,node.lineno,snippet))
-        
-        if name == "approx":
-            snippet = ast.get_source_segment(self.source_text, node)
-            assertion_type = "pytest.approx"
             self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type,node.lineno,snippet))
 
         NUMPY_TESTING_METHODS = {
@@ -84,6 +86,14 @@ class AssertionMiner(ast.NodeVisitor):
                     snippet = ast.get_source_segment(self.source_text, node)
                     assertion_type = "tensorflow.assertAllClose"
                     self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type,node.lineno,snippet))
+        
+        CUSTOM_ASSERTS = {"assert_close"} 
+        if name in CUSTOM_ASSERTS:
+            snippet = ast.get_source_segment(self.source_text, node)
+            assertion_type = f"custom.{name}"
+            self.rows.append((self.filepath, self.current_class,
+                            self.current_function, assertion_type,
+                            node.lineno, snippet))
         self.generic_visit(node)
 
 def compile_project(LINK, TARGET, test_dirs):

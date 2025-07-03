@@ -24,49 +24,79 @@ Problem test indexes:
 
 Indexes to run:
 
+fairseq installation
+
+```bash
+# ── 1. clone & init submodules ─────────────────────────────────────────
+git clone https://github.com/<your-fork>/fairseq2.git fairseq2_repo
+cd fairseq2_repo
+git submodule update --init --recursive
+
+# ── 2. one-time system tools (Homebrew) ────────────────────────────────
+brew install python@3.12 libsndfile cmake ninja     # skip if already present
+
+# ── 3. Python-3.12 virtual-env with core wheels ────────────────────────
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip numpy
+pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu
+pip install -r native/python/requirements-build.txt    # cmake/ninja/pybind11
+
+# ── 4. build & install the C++ backend (fairseq2n) ─────────────────────
+cd native
+cmake -GNinja -B build -DPython3_EXECUTABLE="$(which python)" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+cd python && pip install -e . && cd ../../            # installs fairseq2n 0.5.0.dev0
+
+# ── 5. install the Python layer + all test extras ──────────────────────
+pip install -e ".[arrow]"          # pulls pyarrow, polars, retrying, xxhash
+pip install -r requirements-devel.txt   # pytest, mypy, etc.
+
+# ── 6. run the full CPU test-suite ─────────────────────────────────────
+pytest -q                           # expect: 901 passed, 12 skipped
+```
 
 commands:
 ```bash
 
-# rm -rf lightning_repo
+rm -rf fairseq2_repo
 mkdir -p ast_dir
-python3 AssertSpecFinder.py compile --project-link https://github.com/huggingface/transformers.git \
-    --test-dirs "src,tests" \
-    --clone-dir transformers_repo \
-    --asts-out ast_dir/transformers_asts.pkl
+python3 AssertSpecFinder.py compile --project-link https://github.com/facebookresearch/fairseq2.git \
+    --clone-dir fairseq2_repo \
+    --asts-out ast_dir/fairseq2_asts.pkl
 
 mkdir -p test_csvs
-python3 AssertSpecFinder.py mine --asts-in ast_dir/transformers_asts.pkl \
+python3 AssertSpecFinder.py mine --asts-in ast_dir/fairseq2_asts.pkl \
     --test-dir tests \
-    --csv-target test_csvs/transformers_assertions.csv \
-    --funcs-out ast_dir/transformers_funcs.pkl
+    --csv-target test_csvs/fairseq2_assertions.csv \
+    --funcs-out ast_dir/fairseq2_funcs.pkl
 
-# deactivate
-# rm -rf .venv
+deactivate
+rm -rf .venv
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -r transformers_custom.txt
+# pip install -r transformers_custom.txt
 
 # cd lightning_repo
 # make test
 # cd ..
 
-pip freeze > constraints.txt
+pip freeze | grep -vE '^\s*-e\b' > constraints.txt
 pip install -r script_reqs.txt \
     --constraint constraints.txt
 
-python3 Seeder.py remove_seed --asts-in ast_dir/transformers_asts.pkl
+python3 Seeder.py remove_seed --asts-in ast_dir/fairseq2_asts.pkl
 
-python3 Instrumentor.py log --csv-in test_csvs/transformers_assertions.csv \
-    --csv-out test_csvs/transformers_assertions_m1.csv \
-    --asts-in ast_dir/transformers_asts.pkl \
-    --funcs-in ast_dir/transformers_funcs.pkl
+python3 Instrumentor.py log --csv-in test_csvs/fairseq2_assertions.csv \
+    --csv-out test_csvs/fairseq2_assertions_m1.csv \
+    --asts-in ast_dir/fairseq2_asts.pkl \
+    --funcs-in ast_dir/fairseq2_funcs.pkl
 
-cp conftest.py transformers_repo/
+cp conftest.py fairseq2_repo/
 
 # rm -rf lightning_dists
-mkdir -p transformers_dists
+mkdir -p fairseq2_dists
 
 python3 Distributions.py sample_csv --csv-in test_csvs/transformers_assertions_m1.csv \
     --trials 10 \
@@ -77,7 +107,6 @@ python3 Distributions.py sample_csv --csv-in test_csvs/transformers_assertions_m
     --seed-config-file-in ../seed_configs.yaml \
     --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
 ```
-
 Building:
 ```bash
 docker login

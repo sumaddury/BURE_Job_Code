@@ -15,13 +15,43 @@ class Logger(ast.NodeTransformer):
         if node.lineno != self.target_lineno:
             return node
         node = cast(ast.Assert, self.generic_visit(node))
+
+        if (isinstance(node.test, ast.Compare) and len(node.test.ops) == 1 and isinstance(node.test.ops[0], ast.Eq) and isinstance(node.test.comparators[0], ast.Call)):
+            lhs       = node.test.left
+            rhs_call  = node.test.comparators[0]
+            func      = rhs_call.func
+            is_approx = (
+                (isinstance(func, ast.Name)      and func.id  == "approx") or
+                (isinstance(func, ast.Attribute) and func.attr == "approx")
+            )
+
+            if is_approx and rhs_call.args:
+                lhs_copy = copy.deepcopy(lhs)
+                fstr_left = ast.JoinedStr([
+                    ast.Constant("\nFLAKY_METRIC: "),
+                    ast.FormattedValue(
+                        value=ast.Call(ast.Name("float", ast.Load()),
+                                    [lhs_copy], []),
+                        conversion=-1, format_spec=None)
+                ])
+                print_left = ast.Expr(
+                    ast.Call(ast.Name("print", ast.Load()), [fstr_left], []))
+
+                ref_copy = copy.deepcopy(rhs_call.args[0])
+                fstr_ref = ast.JoinedStr([
+                    ast.Constant("\nFLAKY_METRIC: "),
+                    ast.FormattedValue(
+                        value=ast.Call(ast.Name("float", ast.Load()),
+                                    [ref_copy], []),
+                        conversion=-1, format_spec=None)
+                ])
+                print_ref = ast.Expr(
+                    ast.Call(ast.Name("print", ast.Load()), [fstr_ref], []))
+
+                return [print_left, print_ref, node]
         if isinstance(node.test, ast.Compare):
             left = copy.deepcopy(node.test.left)
             right = copy.deepcopy(node.test.comparators[0])
-            # print_left = ast.Expr(ast.Call(
-            #     func=ast.Name(id="print", ctx=ast.Load()),
-            #     args=[ ast.Constant("\nFLAKY_METRIC: "), left ],
-            #     keywords=[]))
             fstr_left = ast.JoinedStr([ast.Constant("\nFLAKY_METRIC: "), ast.FormattedValue(value=ast.Call(
                         func=ast.Name(id="float", ctx=ast.Load()),
                         args=[ left ],
@@ -31,10 +61,6 @@ class Logger(ast.NodeTransformer):
                 func=ast.Name(id="print", ctx=ast.Load()),
                 args=[fstr_left],
                 keywords=[]))
-            # print_right = ast.Expr(ast.Call(
-            #     func=ast.Name(id="print", ctx=ast.Load()),
-            #     args=[ ast.Constant("\nFLAKY_METRIC: "), right ],
-            #     keywords=[]))
             fstr_right = ast.JoinedStr([ast.Constant("\nFLAKY_METRIC: "), ast.FormattedValue(value=ast.Call(
                         func=ast.Name(id="float", ctx=ast.Load()),
                         args=[ right ],
@@ -75,10 +101,6 @@ class Logger(ast.NodeTransformer):
             if left and right:
                 left_copy = copy.deepcopy(left)
                 right_copy = copy.deepcopy(right)
-                # print_left = ast.Expr(ast.Call(
-                #     func=ast.Name(id="print", ctx=ast.Load()),
-                #     args=[ ast.Constant("\nFLAKY_METRIC: "), left_copy ],
-                #     keywords=[]))
                 fstr_left = ast.JoinedStr([ast.Constant("\nFLAKY_METRIC: "), ast.FormattedValue(value=ast.Call(
                             func=ast.Name(id="float", ctx=ast.Load()),
                             args=[ left_copy ],
@@ -88,10 +110,6 @@ class Logger(ast.NodeTransformer):
                     func=ast.Name(id="print", ctx=ast.Load()),
                     args=[fstr_left],
                     keywords=[]))
-                # print_right = ast.Expr(ast.Call(
-                #     func=ast.Name(id="print", ctx=ast.Load()),
-                #     args=[ ast.Constant("\nFLAKY_METRIC: "), right_copy ],
-                #     keywords=[]))
                 fstr_right = ast.JoinedStr([ast.Constant("\nFLAKY_METRIC: "), ast.FormattedValue(value=ast.Call(
                             func=ast.Name(id="float", ctx=ast.Load()),
                             args=[ right_copy ],

@@ -26,3 +26,5 @@ transformers_dists/
 transformers_repo/
 example.txt
 removed_seeds.txt
+fairseq2_repo/
+fairseq2_dists
