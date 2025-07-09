@@ -87,7 +87,7 @@ class AssertionMiner(ast.NodeVisitor):
                     assertion_type = "tensorflow.assertAllClose"
                     self.rows.append((self.filepath, self.current_class, self.current_function, assertion_type,node.lineno,snippet))
         
-        CUSTOM_ASSERTS = {"assert_close"} 
+        CUSTOM_ASSERTS = {"assert_close", "assert_equal"} 
         if name in CUSTOM_ASSERTS:
             snippet = ast.get_source_segment(self.source_text, node)
             assertion_type = f"custom.{name}"

@@ -59,24 +59,24 @@ pytest -q                           # expect: 901 passed, 12 skipped
 commands:
 ```bash
 
-rm -rf fairseq2_repo
+rm -rf pyro_repo
 mkdir -p ast_dir
-python3 AssertSpecFinder.py compile --project-link https://github.com/facebookresearch/fairseq2.git \
-    --clone-dir fairseq2_repo \
-    --asts-out ast_dir/fairseq2_asts.pkl
+python3 AssertSpecFinder.py compile --project-link https://github.com/pyro-ppl/pyro.git \
+    --clone-dir pyro_repo \
+    --asts-out ast_dir/pyro_asts.pkl
 
 mkdir -p test_csvs
-python3 AssertSpecFinder.py mine --asts-in ast_dir/fairseq2_asts.pkl \
+python3 AssertSpecFinder.py mine --asts-in ast_dir/pyro_asts.pkl \
     --test-dir tests \
-    --csv-target test_csvs/fairseq2_assertions.csv \
-    --funcs-out ast_dir/fairseq2_funcs.pkl
+    --csv-target test_csvs/pyro_assertions.csv \
+    --funcs-out ast_dir/pyro_funcs.pkl
 
 deactivate
 rm -rf .venv
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-# pip install -r transformers_custom.txt
+pip install -r pyro_custom_cpu.txt
 
 # cd lightning_repo
 # make test
@@ -86,26 +86,26 @@ pip freeze | grep -vE '^\s*-e\b' > constraints.txt
 pip install -r script_reqs.txt \
     --constraint constraints.txt
 
-python3 Seeder.py remove_seed --asts-in ast_dir/fairseq2_asts.pkl
+python3 Seeder.py remove_seed --asts-in ast_dir/pyro_asts.pkl
 
-python3 Instrumentor.py log --csv-in test_csvs/fairseq2_assertions.csv \
-    --csv-out test_csvs/fairseq2_assertions_m1.csv \
-    --asts-in ast_dir/fairseq2_asts.pkl \
-    --funcs-in ast_dir/fairseq2_funcs.pkl
+python3 Instrumentor.py log --csv-in test_csvs/pyro_assertions.csv \
+    --csv-out test_csvs/pyro_assertions_m1.csv \
+    --asts-in ast_dir/pyro_asts.pkl \
+    --funcs-in ast_dir/pyro_funcs.pkl
 
-cp conftest.py fairseq2_repo/
+cp conftest.py pyro_repo/
 
 # rm -rf lightning_dists
-mkdir -p fairseq2_dists
+mkdir -p pyro_dists
 
-python3 Distributions.py sample_csv --csv-in test_csvs/transformers_assertions_m1.csv \
-    --trials 10 \
+python3 Distributions.py sample_csv --csv-in test_csvs/pyro_assertions_m1.csv \
+    --trials 8 \
     --workers 4 \
-    --dir-out transformers_dists \
-    --repo-name transformers_repo \
+    --dir-out pyro_dists \
+    --repo-name pyro_repo \
     --seed-value 42 \
     --seed-config-file-in ../seed_configs.yaml \
-    --seed-config-names "NO_SEEDS;RANDOM;NUMPY;TORCH;RANDOM,NUMPY,TORCH"
+    --seed-config-names "NO_SEEDS;RANDOM,NUMPY,TORCH"
 ```
 Building:
 ```bash
@@ -169,7 +169,7 @@ jid2=$(sbatch \
   --partition=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --ntasks=1 --cpus-per-task=16 --mem=8G --gres=gpu:0 --time=06:00:00 \
+  --ntasks=1 --cpus-per-task=20 --mem=16G --gres=gpu:0 --time=12:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')

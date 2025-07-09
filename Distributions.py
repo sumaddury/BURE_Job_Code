@@ -70,7 +70,7 @@ def plot_distribution(data, bins=20, title='Distribution', xlabel='Value', ylabe
     ax.set_ylabel(ylabel)
     return fig, ax
 
-def do_trial(test_input, safeguard=2):
+def do_trial(test_input, safeguard=3):
     err = None
     for _ in range(safeguard):
         try:

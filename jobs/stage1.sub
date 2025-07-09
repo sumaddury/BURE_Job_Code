@@ -18,30 +18,31 @@ singularity exec \
   bash -lc "
     set -euo pipefail
 
-    mkdir -p ast_dir
-    python3 AssertSpecFinder.py compile --project-link https://github.com/Lightning-AI/pytorch-lightning.git \
-        --clone-dir lightning_repo \
-        --asts-out ast_dir/lightning_asts.pkl
-
-    mkdir -p test_csvs
-    python3 AssertSpecFinder.py mine --asts-in ast_dir/lightning_asts.pkl \
-        --csv-target test_csvs/lightning_assertions.csv \
-        --funcs-out ast_dir/lightning_funcs.pkl
-
-    # 3) build isolated Python 3.10 env, then install deps
     python3.10 -m venv .venv
     source .venv/bin/activate
     pip install --upgrade pip
-    pip install -r requirements_custom.txt
+
+    mkdir -p ast_dir
+    python3 AssertSpecFinder.py compile --project-link https://github.com/pyro-ppl/pyro.git \
+        --clone-dir pyro_repo \
+        --asts-out ast_dir/pyro_asts.pkl
+
+    mkdir -p test_csvs
+    python3 AssertSpecFinder.py mine --asts-in ast_dir/pyro_asts.pkl \
+        --test-dir tests \
+        --csv-target test_csvs/pyro_assertions.csv \
+        --funcs-out ast_dir/pyro_funcs.pkl
+
+    # 3) build isolated Python 3.10 env, then install deps
+    pip install -r pyro_custom_cpu.txt
     pip freeze | grep -v '^-e ' > constraints.txt
     pip install -r script_reqs.txt --constraint constraints.txt
 
     # 4) seed stripping + instrumentation
-    python3 Seeder.py remove_seed --asts-in ast_dir/lightning_asts.pkl
+    python3 Seeder.py remove_seed --asts-in ast_dir/pyro_asts.pkl
 
-    python3 Instrumentor.py log \
-        --csv-in test_csvs/lightning_assertions.csv \
-        --csv-out test_csvs/lightning_assertions_m1.csv \
-        --asts-in ast_dir/lightning_asts.pkl \
-        --funcs-in ast_dir/lightning_funcs.pkl
+    python3 Instrumentor.py log --csv-in test_csvs/pyro_assertions.csv \
+        --csv-out test_csvs/pyro_assertions_m1.csv \
+        --asts-in ast_dir/pyro_asts.pkl \
+        --funcs-in ast_dir/pyro_funcs.pkl
 "

@@ -4,14 +4,14 @@
 set -euo pipefail
 
 # TOTAL_TRIALS=${TOTAL_TRIALS:-1000}
-WORKERS=8
+WORKERS=20
 # ${WORKERS:-1}
 
 export work=/scratch/$USER/${DEP_JOB_ID}
 export PYTHONUNBUFFERED=1
-export SINGULARITYENV_OMP_NUM_THREADS=2
-export SINGULARITYENV_MKL_NUM_THREADS=2
-export SINGULARITYENV_OPENBLAS_NUM_THREADS=2
+export SINGULARITYENV_OMP_NUM_THREADS=1
+export SINGULARITYENV_MKL_NUM_THREADS=1
+export SINGULARITYENV_OPENBLAS_NUM_THREADS=1
 cd "$work"
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
@@ -19,7 +19,7 @@ cd "$work"
 TRIALS_PER=1000
 # $(( TOTAL_TRIALS / NUM_TASKS ))
 
-OUTDIR=lightning_dists
+OUTDIR=pyro_dists
 # lightning_worker/${TASK_ID}
 
 # echo "=== TASK ${TASK_ID}/${NUM_TASKS} starting at $(date) ==="
@@ -40,17 +40,17 @@ singularity exec \
     #   exit 1
     # fi
 
-    cp -n conftest.py lightning_repo/
+    cp -n conftest.py pyro_repo/
 
     rm -rf '"$OUTDIR"'
     mkdir -p '"$OUTDIR"'
     python3 -u Distributions.py sample_csv \
-        --csv-in test_csvs/lightning_assertions_m1.csv \
+        --csv-in test_csvs/pyro_assertions_m1.csv \
         --dir-out '"$OUTDIR"' \
-        --assertions "test_full_loop_244,test_full_loop_249,test_train_loop_only_168,test_train_val_loop_only_185" \
+        --assertions "$(paste -sd, pyro_interest.txt)" \
         --trials '"$TRIALS_PER"' \
         --workers '"$WORKERS"' \
-        --repo-name lightning_repo \
+        --repo-name pyro_repo \
         --seed-value 42 \
         --seed-config-file-in "../seed_configs.yaml" \
         --seed-config-names "NO_SEEDS;RANDOM,NUMPY;RANDOM,NUMPY,TORCH"
