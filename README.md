@@ -149,8 +149,7 @@ jid1=$(sbatch \
 
 #gpu
 jid1=$(sbatch \
-  --gres=gpu:1 \
-  --partition=dutta \
+  --gres=gpu:a6000:1 \
   --account=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
@@ -183,6 +182,8 @@ jid2=$(sbatch \
 
 jid2=$(sbatch \
   --account=dutta \
+  --partition=default_partition \
+  --nodelist=zabih-compute-01 \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
