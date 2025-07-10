@@ -28,7 +28,7 @@ def run_pytest(LOGGED_PATH, CLASS, TEST, repo_name, seed_value, seed_config_name
             cwd=str(project_root),
             capture_output=True,
             text=True,
-            timeout=300,
+            timeout=180,
         )
     except subprocess.TimeoutExpired as e:
         return {

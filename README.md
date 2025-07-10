@@ -99,10 +99,10 @@ cp conftest.py pyro_repo/
 mkdir -p pyro_dists
 
 python3 Distributions.py sample_csv --csv-in test_csvs/pyro_assertions_m1.csv \
-    --trials 8 \
+    --trials 4 \
     --workers 4 \
-    --dir-out pyro_dists \
-    --assertions "$(paste -sd, pyro_interest.txt)" \
+    --dir-out temp_dists \
+    --assertions "$(paste -sd, pyro_interest_gpu.txt)" \
     --repo-name pyro_repo \
     --seed-value 42 \
     --seed-config-file-in ../seed_configs.yaml \
@@ -159,10 +159,6 @@ jid1=$(sbatch \
 
 echo "Stage-1 JobID: $jid1"
 
-# Stage-1 JobID: 8354444
-
-# Sample array ID: 8354445
-
 squeue -u $USER
 sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
 
@@ -177,19 +173,22 @@ jid2=$(sbatch \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
+
+# Current gpu job ids (dutta):
+# stage1: 8402430
+# sample: 8402471
 #gpu
 
 
 jid2=$(sbatch \
   --account=dutta \
-  --partition=default_partition \
-  --nodelist=zabih-compute-01 \
+  --partition=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
-  --cpus-per-task=4 \
+  --cpus-per-task=8 \
   --mem=8G \
-  --gres=gpu:a6000:1 \
+  --gres=gpu:h100:1 \
   --time=48:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \

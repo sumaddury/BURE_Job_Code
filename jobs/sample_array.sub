@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # TOTAL_TRIALS=${TOTAL_TRIALS:-1000}
-WORKERS=4
+WORKERS=8
 # ${WORKERS:-1}
 
 export work=/scratch/$USER/${DEP_JOB_ID}
@@ -18,6 +18,7 @@ export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
 export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
 export CUDA_VISIBLE_DEVICES=${SLURM_JOB_GPUS:-0}
 nvidia-cuda-mps-control -d
+sleep 2
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
@@ -59,12 +60,11 @@ singularity exec --nv \
 
     cp -n conftest.py pyro_repo/
 
-    rm -rf '"$OUTDIR"'
     mkdir -p '"$OUTDIR"'
     python3 -u Distributions.py sample_csv \
         --csv-in test_csvs/pyro_assertions_m1.csv \
         --dir-out '"$OUTDIR"' \
-        --assertions "$(paste -sd, pyro_interest.txt)" \
+        --assertions "$(paste -sd, pyro_interest_gpu.txt)" \
         --trials '"$TRIALS_PER"' \
         --workers '"$WORKERS"' \
         --repo-name pyro_repo \
