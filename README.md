@@ -172,22 +172,24 @@ jid2=$(sbatch \
   --account=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --ntasks=1 --cpus-per-task=20 --mem=16G --gres=gpu:0 --time=12:00:00 \
+  --ntasks=1 --cpus-per-task=25 --mem=24G --gres=gpu:0 --time=48:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
 #gpu
 
+
 jid2=$(sbatch \
-  --partition=dutta \
+  --account=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --array=0-7 \
-  --gres=gpu:1 \
-  --cpus-per-task=2 \
-  --mem=8G --time=15:00:00 \
-  --output=logs/sample_%A_%a.out \
+  --ntasks=1 \
+  --cpus-per-task=4 \
+  --mem=8G \
+  --gres=gpu:a6000:1 \
+  --time=48:00:00 \
+  --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 

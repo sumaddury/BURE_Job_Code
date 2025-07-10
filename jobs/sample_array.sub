@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # TOTAL_TRIALS=${TOTAL_TRIALS:-1000}
-WORKERS=20
+WORKERS=4
 # ${WORKERS:-1}
 
 export work=/scratch/$USER/${DEP_JOB_ID}
@@ -14,9 +14,13 @@ export SINGULARITYENV_MKL_NUM_THREADS=1
 export SINGULARITYENV_OPENBLAS_NUM_THREADS=1
 cd "$work"
 
+export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
+export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
+nvidia-cuda-mps-control -d
+
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
-TRIALS_PER=1000
+TRIALS_PER=200
 # $(( TOTAL_TRIALS / NUM_TASKS ))
 
 OUTDIR=pyro_dists
@@ -26,8 +30,12 @@ OUTDIR=pyro_dists
 
   # --env PL_TEST_DEVICE=cuda \
 
-singularity exec \
+cleanup() { echo quit | nvidia-cuda-mps-control; }
+trap cleanup EXIT
+
+singularity exec --nv \
   --env PYTHONUNBUFFERED=1 \
+  --env PL_TEST_DEVICE=cuda \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
   "$IMG" bash -lc '
@@ -35,10 +43,10 @@ singularity exec \
 
     source .venv/bin/activate
 
-    # if ! python3 -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)"; then
-    #   echo "ERROR: CUDA not available—aborting." >&2
-    #   exit 1
-    # fi
+    if ! python3 -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)"; then
+      echo "ERROR: CUDA not available—aborting." >&2
+      exit 1
+    fi
 
     cp -n conftest.py pyro_repo/
 

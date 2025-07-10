@@ -21,6 +21,7 @@ def run_pytest(LOGGED_PATH, CLASS, TEST, repo_name, seed_value, seed_config_name
         "--seed-config-file", seed_config_file,
         "--seed-config-name", seed_config_name,
         "--seed-value",       str(seed_value),
+        "--cuda"
     ]
     try:
         proc = subprocess.run(
