@@ -151,7 +151,8 @@ jid1=$(sbatch \
 jid1=$(sbatch \
   --gres=gpu:1 \
   --partition=dutta \
-  --ntasks=1 --cpus-per-task=2 --mem=4G --time=01:00:00 \
+  --account=dutta \
+  --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
   --output=logs/stage1_%j.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
