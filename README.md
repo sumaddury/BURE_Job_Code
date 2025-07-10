@@ -102,6 +102,7 @@ python3 Distributions.py sample_csv --csv-in test_csvs/pyro_assertions_m1.csv \
     --trials 8 \
     --workers 4 \
     --dir-out pyro_dists \
+    --assertions "$(paste -sd, pyro_interest.txt)" \
     --repo-name pyro_repo \
     --seed-value 42 \
     --seed-config-file-in ../seed_configs.yaml \
@@ -139,6 +140,7 @@ sinfo -N -p dutta -o "%n %G"
 #cpu
 jid1=$(sbatch \
   --partition=dutta \
+  --account=dutta \
   --job-name=pl_stage1 \
   --ntasks=1 --cpus-per-task=2 --mem=4G --time=01:00:00 \
   --output=logs/stage1_%j.out \
@@ -167,6 +169,7 @@ sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
 #cpu
 jid2=$(sbatch \
   --partition=dutta \
+  --account=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 --cpus-per-task=20 --mem=16G --gres=gpu:0 --time=12:00:00 \
