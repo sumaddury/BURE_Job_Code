@@ -179,6 +179,11 @@ srun --partition=gpu --nodelist=zabih-compute-01 --account=dutta \
      --bind /scratch:/scratch \
      /share/dutta/$USER/containers/pl-pipeline.sif bash
 
+srun --partition=dutta --account=dutta \
+     --cpus-per-task=2 --time=01:00:00 --mem=16G --pty \
+     /share/apps/singularity/3.7.0/bin/singularity exec --nv \
+     --bind /scratch:/scratch \
+     /share/dutta/$USER/containers/pl-pipeline.sif bash
 
 echo "Stage-1 JobID: $jid1"
 
@@ -191,7 +196,7 @@ jid2=$(sbatch \
   --account=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --ntasks=1 --cpus-per-task=25 --mem=24G --gres=gpu:0 --time=48:00:00 \
+  --ntasks=1 --cpus-per-task=32 --mem=24G --gres=gpu:0 --time=48:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
@@ -202,14 +207,16 @@ jid2=$(sbatch \
 # sample: 8402471
 #gpu
 
+# Start: ~12 AM FRI JUL 11
+
 # Current gpu job ids (zabih-compute-01)
 # stage1: 8403615
 # 1: 8403618
 # 2: 8403621
 
 # Current gpu job ids (dutta)
-# stage1: 8403597
-# 1: 
+# stage1: 8403623
+# 1: 8403633
 
 jid2=$(sbatch \
   --account=dutta \

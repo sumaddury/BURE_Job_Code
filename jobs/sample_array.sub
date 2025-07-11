@@ -4,14 +4,14 @@
 set -euo pipefail
 
 # TOTAL_TRIALS=${TOTAL_TRIALS:-1000}
-WORKERS=8
+WORKERS=16
 # ${WORKERS:-1}
 
 export work=/scratch/$USER/${DEP_JOB_ID}
 export PYTHONUNBUFFERED=1
-export SINGULARITYENV_OMP_NUM_THREADS=1
-export SINGULARITYENV_MKL_NUM_THREADS=1
-export SINGULARITYENV_OPENBLAS_NUM_THREADS=1
+export SINGULARITYENV_OMP_NUM_THREADS=2
+export SINGULARITYENV_MKL_NUM_THREADS=2
+export SINGULARITYENV_OPENBLAS_NUM_THREADS=2
 cd "$work"
 
 # export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
@@ -24,22 +24,20 @@ cd "$work"
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
-TRIALS_PER=500
+TRIALS_PER=1000
 # $(( TOTAL_TRIALS / NUM_TASKS ))
 
 # lightning_worker/${TASK_ID}
 
 # echo "=== TASK ${TASK_ID}/${NUM_TASKS} starting at $(date) ==="
 
-  # --env PL_TEST_DEVICE=cuda \
-
-singularity exec --nv \
+  #   --env PL_TEST_DEVICE=cuda \
+  # --env PYRO_DEVICE=cuda \
+  # --bind /tmp:/tmp \
+singularity exec \
   --env PYTHONUNBUFFERED=1 \
-  --env PL_TEST_DEVICE=cuda \
-  --env PYRO_DEVICE=cuda \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
-  --bind /tmp:/tmp \
   "$IMG" bash -c '
     # echo ">> INSIDE container: Task $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
 
@@ -51,10 +49,10 @@ singularity exec --nv \
 
     source .venv/bin/activate
 
-    if ! python3 -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)"; then
-      echo "ERROR: CUDA not available—aborting." >&2
-      exit 1
-    fi
+    # if ! python3 -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)"; then
+    #   echo "ERROR: CUDA not available—aborting." >&2
+    #   exit 1
+    # fi
 
     cp -n conftest.py pyro_repo/
 
