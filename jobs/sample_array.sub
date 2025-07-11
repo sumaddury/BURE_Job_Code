@@ -14,13 +14,13 @@ export SINGULARITYENV_MKL_NUM_THREADS=1
 export SINGULARITYENV_OPENBLAS_NUM_THREADS=1
 cd "$work"
 
-export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
-export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
-export CUDA_VISIBLE_DEVICES=${SLURM_JOB_GPUS:-0}
-mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
-nvidia-cuda-mps-control -d
-sleep 10
-trap 'echo quit | nvidia-cuda-mps-control' EXIT 
+# export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
+# export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
+# export CUDA_VISIBLE_DEVICES=${SLURM_JOB_GPUS:-0}
+# mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
+# nvidia-cuda-mps-control -d
+# sleep 10
+# trap 'echo quit | nvidia-cuda-mps-control' EXIT 
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
@@ -35,9 +35,6 @@ TRIALS_PER=125
 
 singularity exec --nv \
   --env PYTHONUNBUFFERED=1 \
-  --env CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
-  --env CUDA_MPS_PIPE_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY \
-  --env CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY \
   --env PL_TEST_DEVICE=cuda \
   --env PYRO_DEVICE=cuda \
   --bind "${work}:${work}" \
@@ -49,8 +46,8 @@ singularity exec --nv \
     # nvidia-cuda-mps-control -d
     # sleep 30
 
-    cleanup() { echo quit | nvidia-cuda-mps-control; }
-    trap cleanup EXIT
+    # cleanup() { echo quit | nvidia-cuda-mps-control; }
+    # trap cleanup EXIT
 
     source .venv/bin/activate
 
