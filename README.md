@@ -148,6 +148,17 @@ jid1=$(sbatch \
   jobs/stage1.sub | awk '{print $4}')
 
 #gpu
+
+jid1=$(sbatch \
+  --gres=gpu:h100:1 \
+  --partition=dutta \
+  --account=dutta \
+  --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
+  --job-name=pl_stage1 \
+  --output=logs/stage1_%j.out \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
+  jobs/stage1.sub | awk '{print $4}')
+
 jid1=$(sbatch \
   --gres=gpu:a6000:1 \
   --nodelist=zabih-compute-01 \
@@ -197,6 +208,8 @@ jid2=$(sbatch \
 # 2: 8403579
 
 # Current gpu job ids (dutta)
+# stage1: 8403597
+# 1: 
 
 jid2=$(sbatch \
   --account=dutta \
@@ -205,7 +218,7 @@ jid2=$(sbatch \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=8 \
-  --mem=24G \
+  --mem=48G \
   --gres=gpu:h100:1 \
   --time=48:00:00 \
   --output=logs/sample_%A.out \
