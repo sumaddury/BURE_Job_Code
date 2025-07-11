@@ -99,7 +99,7 @@ cp conftest.py pyro_repo/
 mkdir -p pyro_dists
 
 python3 Distributions.py sample_csv --csv-in test_csvs/pyro_assertions_m1.csv \
-    --trials 4 \
+    --trials 8 \
     --workers 4 \
     --dir-out temp_dists \
     --assertions "$(paste -sd, pyro_interest_gpu.txt)" \
@@ -149,14 +149,24 @@ jid1=$(sbatch \
 
 #gpu
 jid1=$(sbatch \
-  --gres=gpu:a100:1 \
-  --nodelist=nlplarge-compute-01 \
+  --gres=gpu:a6000:2 \
+  --partition=gpu \
   --account=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
   --output=logs/stage1_%j.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
   jobs/stage1.sub | awk '{print $4}')
+
+node=$(sacct -j "$jid1" -n -P -o NodeList | head -1)
+part=$(sacct -j "$jid1" -n -P -o Partition | head -1)
+
+srun --partition=gpu --nodelist=zabih-compute-01 --account=dutta \
+     --gres=gpu:a6000:1 --cpus-per-task=4 --time=02:00:00 --mem=16G --pty \
+     /share/apps/singularity/3.7.0/bin/singularity exec --nv \
+     --bind /scratch:/scratch \
+     /share/dutta/$USER/containers/pl-pipeline.sif bash
+
 
 echo "Stage-1 JobID: $jid1"
 
@@ -183,13 +193,14 @@ jid2=$(sbatch \
 
 jid2=$(sbatch \
   --account=dutta \
-  --nodelist=nlplarge-compute-01 \
+  --partition=gpu \
+  --nodelist=zabih-compute-01 \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=8 \
   --mem=12G \
-  --gres=gpu:a100:1 \
+  --gres=gpu:a6000:1 \
   --time=48:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \

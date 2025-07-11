@@ -17,8 +17,7 @@ cd "$work"
 export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
 export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
 export CUDA_VISIBLE_DEVICES=${SLURM_JOB_GPUS:-0}
-nvidia-cuda-mps-control -d
-sleep 2
+mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
@@ -40,14 +39,12 @@ singularity exec --nv \
   --env CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY \
   --env PYRO_DEVICE=cuda \
   --bind "${work}:${work}" \
+  --bind /tmp:/tmp \
   --pwd  "${work}" \
   "$IMG" bash -lc '
     # echo ">> INSIDE container: Task $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
 
-    mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
-
-    # nvidia-cuda-mps-control -d
-
+    nvidia-cuda-mps-control -d
     cleanup() { echo quit | nvidia-cuda-mps-control; }
     trap cleanup EXIT
 
