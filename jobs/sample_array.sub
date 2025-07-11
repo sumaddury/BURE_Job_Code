@@ -18,18 +18,8 @@ export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
 export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
 export CUDA_VISIBLE_DEVICES=${SLURM_JOB_GPUS:-0}
 mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
-echo "starting"
 nvidia-cuda-mps-control -d
-echo "ending"
-i=0
-while [[ ! -S $CUDA_MPS_PIPE_DIRECTORY/nvidia-mps ]]; do
-    sleep 0.5
-    ((i++))
-    if (( i % 10 == 0 )); then
-        echo "  still waiting ($(bc <<<"scale=1; $i*0.5") s elapsed)"
-    fi
-done
-echo "hello"
+sleep 30
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
