@@ -37,7 +37,7 @@ singularity exec --nv \
   --env PYRO_DEVICE=cuda \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
-  "$IMG" bash -lc '
+  "$IMG" bash -c '
     # echo ">> INSIDE container: Task $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
 
     # nvidia-cuda-mps-control -d
