@@ -14,17 +14,16 @@ export SINGULARITYENV_MKL_NUM_THREADS=1
 export SINGULARITYENV_OPENBLAS_NUM_THREADS=1
 cd "$work"
 
-export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
-export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
+# export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-$SLURM_JOB_ID
+# export CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY
 export CUDA_VISIBLE_DEVICES=${SLURM_JOB_GPUS:-0}
-mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
+# mkdir -p "$CUDA_MPS_PIPE_DIRECTORY"
 
 # TASK_ID=${SLURM_ARRAY_TASK_ID}
 # NUM_TASKS=${SLURM_ARRAY_TASK_COUNT}
 TRIALS_PER=125
 # $(( TOTAL_TRIALS / NUM_TASKS ))
 
-OUTDIR=pyro_dists
 # lightning_worker/${TASK_ID}
 
 # echo "=== TASK ${TASK_ID}/${NUM_TASKS} starting at $(date) ==="
@@ -35,20 +34,17 @@ singularity exec --nv \
   --env PYTHONUNBUFFERED=1 \
   --env CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
   --env PL_TEST_DEVICE=cuda \
-  --env CUDA_MPS_PIPE_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY \
-  --env CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY \
   --env PYRO_DEVICE=cuda \
   --bind "${work}:${work}" \
-  --bind /tmp:/tmp \
   --pwd  "${work}" \
   "$IMG" bash -lc '
     # echo ">> INSIDE container: Task $SLURM_ARRAY_TASK_ID of $SLURM_ARRAY_TASK_COUNT"
 
-    nvidia-cuda-mps-control -d
-    sleep 30
+    # nvidia-cuda-mps-control -d
+    # sleep 30
 
-    cleanup() { echo quit | nvidia-cuda-mps-control; }
-    trap cleanup EXIT
+    # cleanup() { echo quit | nvidia-cuda-mps-control; }
+    # trap cleanup EXIT
 
     source .venv/bin/activate
 

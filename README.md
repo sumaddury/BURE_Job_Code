@@ -204,7 +204,7 @@ jid2=$(sbatch \
   --gres=gpu:a6000:1 \
   --time=48:00:00 \
   --output=logs/sample_%A.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_1 \
   jobs/sample_array.sub | awk '{print $4}')
 
 sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
