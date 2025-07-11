@@ -203,9 +203,9 @@ jid2=$(sbatch \
 #gpu
 
 # Current gpu job ids (zabih-compute-01)
-# stage1: 8403559
-# 1: 8403578
-# 2: 8403579
+# stage1: 8403615
+# 1: 8403618
+# 2: 8403621
 
 # Current gpu job ids (dutta)
 # stage1: 8403597
