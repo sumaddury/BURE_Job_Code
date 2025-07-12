@@ -174,13 +174,13 @@ node=$(sacct -j "$jid1" -n -P -o NodeList | head -1)
 part=$(sacct -j "$jid1" -n -P -o Partition | head -1)
 
 srun --partition=gpu --nodelist=zabih-compute-01 --account=dutta \
-     --gres=gpu:a6000:1 --cpus-per-task=4 --time=02:00:00 --mem=16G --pty \
+     --gres=gpu:0 --cpus-per-task=2 --time=01:00:00 --mem=8G --pty \
      /share/apps/singularity/3.7.0/bin/singularity exec --nv \
      --bind /scratch:/scratch \
      /share/dutta/$USER/containers/pl-pipeline.sif bash
 
 srun --partition=dutta --account=dutta \
-     --cpus-per-task=2 --time=01:00:00 --mem=16G --pty \
+     --cpus-per-task=2 --time=01:00:00 --mem=8G --pty \
      /share/apps/singularity/3.7.0/bin/singularity exec --nv \
      --bind /scratch:/scratch \
      /share/dutta/$USER/containers/pl-pipeline.sif bash
@@ -198,11 +198,11 @@ jid2=$(sbatch \
   --dependency=afterok:$jid1 \
   --ntasks=1 --cpus-per-task=32 --mem=24G --gres=gpu:0 --time=48:00:00 \
   --output=logs/sample_%A.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1 \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,OUTDIR=pyro_dists,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
 
-# Current cpu job ids (dutta):
+# Past cpu job ids (dutta):
 # stage1: 8402430
 # sample: 8402471
 #gpu
@@ -217,6 +217,12 @@ jid2=$(sbatch \
 # Current gpu job ids (dutta)
 # stage1: 8403623
 # 1: 8403633
+
+# Start: 2 PM FRI JUL 11
+
+# Current multi-thread job ids (dutta)
+# stage1: 8406181
+# 1: 8406186
 
 jid2=$(sbatch \
   --account=dutta \
