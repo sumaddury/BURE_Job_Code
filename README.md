@@ -201,28 +201,12 @@ jid2=$(sbatch \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,OUTDIR=pyro_dists,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
-
-# Past cpu job ids (dutta):
-# stage1: 8402430
-# sample: 8402471
-#gpu
-
-# Start: ~12 AM FRI JUL 11
+# Start: ~3 PM SAT JUL 12
 
 # Current gpu job ids (zabih-compute-01)
-# stage1: 8403615
-# 1: 8403618
-# 2: 8403621
-
-# Current gpu job ids (dutta)
-# stage1: 8403623
-# 1: 8403633
-
-# Start: 2 PM FRI JUL 11
-
-# Current multi-thread job ids (dutta)
-# stage1: 8406181
-# 1: 8406186
+# stage1: 8407640
+# 1: 8407647
+# 2: 8407654
 
 jid2=$(sbatch \
   --account=dutta \
@@ -248,7 +232,7 @@ jid2=$(sbatch \
   --cpus-per-task=4 \
   --mem=24G \
   --gres=gpu:a6000:1 \
-  --time=48:00:00 \
+  --time=36:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_2 \
   jobs/sample_array.sub | awk '{print $4}')
