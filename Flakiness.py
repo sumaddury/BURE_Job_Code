@@ -23,7 +23,7 @@ def do_trial(test_input):
     if pkg["returncode"] in {0, 1}:
         return int(pkg["returncode"])
     else:
-        raise RuntimeError(f"pytest exited with unexpected code {pkg["returncode"]}", pkg)
+        raise RuntimeError(f"pytest exited with unexpected code {pkg['returncode']}", pkg)
 
 def sample_test(test_input,
                 foldername=None,
