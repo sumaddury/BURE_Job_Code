@@ -162,7 +162,6 @@ jid1=$(sbatch \
 jid1=$(sbatch \
   --gres=gpu:a6000:1 \
   --partition=gpu \
-  --nodelist=nikola-compute-15 \
   --account=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
@@ -218,7 +217,8 @@ jid2=$(sbatch \
 # 1: 8494773
 
 # Current multithread job ids (dutta)
-# stage1: 
+# stage1: 8494781
+# 1: 8494783
 # stage1: 8494775
 # 1: 8494776
 
@@ -252,12 +252,12 @@ jid2=$(sbatch \
   --account=dutta \
   --gres=gpu:a6000:1 \
   --partition=gpu \
-  --nodelist=nikola-compute-15 \
+  --nodelist=$(sacct -j "$jid1" -n -P -o NodeList | head -1) \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=4 \
-  --mem=16G \
+  --mem=24G \
   --time=24:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_4 \
