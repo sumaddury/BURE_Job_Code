@@ -20,8 +20,10 @@ def do_trial(test_input):
         seed_config_name   = test_input.get("seed_config_name"),
         seed_config_file   = test_input.get("seed_config_file"),
     )
-    return (pkg["returncode"] == 0)
-
+    if pkg["returncode"] in {0, 1}:
+        return int(pkg["returncode"])
+    else:
+        raise RuntimeError(f"pytest exited with unexpected code {pkg["returncode"]}", pkg)
 
 def sample_test(test_input,
                 foldername=None,
@@ -35,11 +37,7 @@ def sample_test(test_input,
         futures = [executor.submit(do_trial, test_input)
                    for _ in range(trials)]
         for i, future in enumerate(as_completed(futures), start=1):
-            # if do_trial raised (e.g. run_pytest blew up), count as failure
-            try:
-                passed = future.result()
-            except Exception:
-                passed = False
+            passed = future.result()
 
             results.append(passed)
             print(i, end=", ", flush=True)
