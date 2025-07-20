@@ -12,7 +12,7 @@ import time
 
 def do_trial(test_input):
     pkg = run_pytest(
-        PATH               = test_input["PATH"],
+        LOGGED_PATH        = test_input["PATH"],
         CLASS              = test_input["CLASS"],
         TEST               = test_input["TEST"],
         repo_name          = test_input["repo_name"],
