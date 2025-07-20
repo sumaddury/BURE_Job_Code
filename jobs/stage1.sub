@@ -34,7 +34,7 @@ singularity exec \
         --funcs-out ast_dir/pyro_funcs.pkl
 
     # 3) build isolated Python 3.10 env, then install deps
-    pip install -r pyro_custom_gpu.txt
+    pip install -r pyro_custom.txt
     pip freeze | grep -v '^-e ' > constraints.txt
     pip install -r script_reqs.txt --constraint constraints.txt
 
