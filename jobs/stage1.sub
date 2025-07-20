@@ -41,8 +41,9 @@ singularity exec \
     # 4) seed stripping + instrumentation
     python3 Seeder.py remove_seed --asts-in ast_dir/pyro_asts.pkl
 
-    python3 Instrumentor.py log --csv-in test_csvs/pyro_assertions.csv \
-        --csv-out test_csvs/pyro_assertions_m1.csv \
-        --asts-in ast_dir/pyro_asts.pkl \
-        --funcs-in ast_dir/pyro_funcs.pkl
+    # python3 Instrumentor.py log --csv-in test_csvs/pyro_assertions.csv \
+    #     --csv-out test_csvs/pyro_assertions_m1.csv \
+    #     --asts-in ast_dir/pyro_asts.pkl \
+    #     --funcs-in ast_dir/pyro_funcs.pkl
 "
+

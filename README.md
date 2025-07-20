@@ -161,8 +161,8 @@ jid1=$(sbatch \
 
 jid1=$(sbatch \
   --gres=gpu:a6000:1 \
-  --nodelist=zabih-compute-01 \
   --partition=gpu \
+  --nodelist=nikola-compute-15 \
   --account=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
@@ -201,12 +201,26 @@ jid2=$(sbatch \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,OUTDIR=pyro_dists,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')
 
-# Start: ~3 PM SAT JUL 12
+# Start: ~10 PM SAT JUL 19
 
-# Current gpu job ids (zabih-compute-01)
-# stage1: 8407640
-# 1: 8407647
-# 2: 8407654
+# Current gpu job ids (nikola-compute-17)
+# stage1: 8494496
+# 1: 8494498
+
+# Current gpu job ids (nikola-compute-15)
+# stage1: 8494520
+# 1: 8494524
+
+To run:
+- CPU:
+  - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
+  - 1000 trials no unseeding (NO_SEEDS)
+- Multithread:
+  - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
+  - 1000 trials no unseeding (NO_SEEDS)
+- GPU:
+  - 500 + 500 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
+  - 500 + 500 trials no unseeding (NO_SEEDS)
 
 jid2=$(sbatch \
   --account=dutta \
@@ -224,17 +238,17 @@ jid2=$(sbatch \
 
 jid2=$(sbatch \
   --account=dutta \
+  --gres=gpu:a6000:1 \
   --partition=gpu \
-  --nodelist=zabih-compute-01 \
+  --nodelist=nikola-compute-15 \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=4 \
-  --mem=24G \
-  --gres=gpu:a6000:1 \
-  --time=36:00:00 \
+  --mem=16G \
+  --time=24:00:00 \
   --output=logs/sample_%A.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_2 \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_4 \
   jobs/sample_array.sub | awk '{print $4}')
 
 sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
