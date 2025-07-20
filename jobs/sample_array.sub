@@ -34,7 +34,7 @@ TRIALS_PER=1000
   #   --env PL_TEST_DEVICE=cuda \
   # --env PYRO_DEVICE=cuda \
   # --bind /tmp:/tmp \
-singularity exec --nv \
+singularity exec \
   --env PYTHONUNBUFFERED=1 \
   --bind "${work}:${work}" \
   --pwd  "${work}" \
