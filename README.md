@@ -211,6 +211,13 @@ jid2=$(sbatch \
 # stage1: 8494520
 # 1: 8494524
 
+# Current cpu job ids (dutta)
+# stage1: 8494770
+# 1: 8494771
+# stage2: 8494772
+# 1: 8494773
+
+#
 To run:
 - CPU:
   - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
