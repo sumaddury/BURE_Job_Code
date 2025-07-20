@@ -196,7 +196,7 @@ jid2=$(sbatch \
   --account=dutta \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
-  --ntasks=1 --cpus-per-task=32 --mem=24G --gres=gpu:0 --time=48:00:00 \
+  --ntasks=1 --cpus-per-task=16 --mem=24G --gres=gpu:0 --time=48:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,OUTDIR=pyro_dists,DEP_JOB_ID=$jid1 \
   jobs/sample_array.sub | awk '{print $4}')

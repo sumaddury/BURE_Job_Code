@@ -56,7 +56,7 @@ def sample_test(test_input,
 
 def test_line(tup, out_name, repo_name, seed_value, seed_config_file, seed_config_names, trials=100, max_workers=4):
     test_input = {
-        'PATH'              : tup.path,
+        'PATH'              : tup.filepath,
         'CLASS'             : tup.testclass,
         'TEST'              : tup.testname,
         'repo_name'         : repo_name,
