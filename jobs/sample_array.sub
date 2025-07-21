@@ -66,5 +66,5 @@ singularity exec --nv \
         --repo-name pyro_repo \
         --seed-value 42 \
         --seed-config-file-in "../seed_configs.yaml" \
-        --seed-config-names "NO_SEEDS;RANDOM,NUMPY"
+        --seed-config-names "NO_SEEDS"
 '

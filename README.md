@@ -151,7 +151,6 @@ jid1=$(sbatch \
 
 jid1=$(sbatch \
   --gres=gpu:h100:1 \
-  --partition=dutta \
   --account=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
@@ -162,8 +161,9 @@ jid1=$(sbatch \
 jid1=$(sbatch \
   --gres=gpu:a6000:1 \
   --partition=gpu \
+  --nodelist=nikola-compute-17 \
   --account=dutta \
-  --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
+  --ntasks=1 --cpus-per-task=2 --mem=8G --time=3:00:00 \
   --job-name=pl_stage1 \
   --output=logs/stage1_%j.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH \
@@ -206,9 +206,9 @@ jid2=$(sbatch \
 # stage1: 8494496
 # 1: 8494498
 
-# Current gpu job ids (nikola-compute-15)
-# stage1: 8494520
-# 1: 8494524
+# Current gpu job ids (nikola-compute-17)
+# stage1: 8497255
+# 1: 8497328
 
 # Current cpu job ids (dutta)
 # stage1: 8494770
@@ -222,48 +222,56 @@ jid2=$(sbatch \
 # stage1: 8494775
 # 1: 8494776
 
-#
+# Current gpu job ids (dutta)
+# stage1: 8496099
+# 1: 8496101
+# 2: 8497870
+
 To run:
 - CPU:
-  - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
-  - 1000 trials no unseeding (NO_SEEDS)
+  - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY) R
+  - 1000 trials no unseeding (NO_SEEDS) R
 - Multithread:
-  - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
-  - 1000 trials no unseeding (NO_SEEDS)
+  - 1000 trials unseeding (NO_SEEDS, RANDOM,NUMPY) R
+  - 1000 trials no unseeding (NO_SEEDS) R
 - GPU:
-  - 500 + 500 trials unseeding (NO_SEEDS, RANDOM,NUMPY)
+  - 500 + 500 trials unseeding (NO_SEEDS, RANDOM,NUMPY) R
   - 500 + 500 trials no unseeding (NO_SEEDS)
 
 jid2=$(sbatch \
   --account=dutta \
   --partition=dutta \
   --job-name=pl_sample \
-  --dependency=afterok:$jid1 \
+  --dependency=afterok:8496099 \
   --ntasks=1 \
-  --cpus-per-task=8 \
-  --mem=48G \
+  --cpus-per-task=4 \
+  --mem=24G \
   --gres=gpu:h100:1 \
   --time=48:00:00 \
   --output=logs/sample_%A.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_3 \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=8496099,OUTDIR=pyro_dists_2 \
   jobs/sample_array.sub | awk '{print $4}')
 
 jid2=$(sbatch \
   --account=dutta \
   --gres=gpu:a6000:1 \
   --partition=gpu \
-  --nodelist=$(sacct -j "$jid1" -n -P -o NodeList | head -1) \
+  --nodelist=nikola-compute-17 \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=4 \
   --mem=24G \
-  --time=24:00:00 \
+  --time=18:00:00 \
   --output=logs/sample_%A.out \
   --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_4 \
   jobs/sample_array.sub | awk '{print $4}')
 
+sinfo -p gpu -N -o '%N %T %G' | awk '/gpu:h100/ && $2 ~ /idle|mix/'
+
 sacct -j $jid2 -o JobID,State,ExitCode,Elapsed,Reason
+node=$(sacct -j "$jid2" -n -P -o NodeList | head -1)
+part=$(sacct -j "$jid2" -n -P -o Partition | head -1)
 tail -f logs/sample_$jid2.out
 
 jid3=$(sbatch \
