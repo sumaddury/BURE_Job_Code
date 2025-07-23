@@ -134,7 +134,7 @@ mv pl-pipeline.sif     /share/dutta/$USER/containers/
 mv flaky-sandbox/      /share/dutta/$USER/containers/
 
 sinfo -p dutta -o "%n %C %m"
-sinfo -N -p dutta -o "%n %G"
+sinfo -N -n nikola-compute-16 -o "%n %G"
 
 nlplarge-compute-01
 #cpu
@@ -161,7 +161,7 @@ jid1=$(sbatch \
 jid1=$(sbatch \
   --gres=gpu:a6000:1 \
   --partition=gpu \
-  --nodelist=nikola-compute-17 \
+  --nodelist=nikola-compute-16 \
   --account=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=3:00:00 \
   --job-name=pl_stage1 \
@@ -180,11 +180,11 @@ srun --partition=gpu --nodelist=zabih-compute-01 --account=dutta \
 
 srun --partition=dutta --account=dutta \
      --cpus-per-task=2 --time=01:00:00 --mem=8G --pty \
-     /share/apps/singularity/3.7.0/bin/singularity exec --nv \
+     /share/apps/singularity/3.7.0/bin/singularity exec \
      --bind /scratch:/scratch \
      /share/dutta/$USER/containers/pl-pipeline.sif bash
 
-echo "Stage-1 JobID: $jid1"
+echo "Stage1 JobID: $jid1"
 
 squeue -u $USER
 sacct -j $jid1 -o JobID,State,ExitCode,Elapsed,Reason
@@ -206,9 +206,9 @@ jid2=$(sbatch \
 # stage1: 8494496
 # 1: 8494498
 
-# Current gpu job ids (nikola-compute-17)
-# stage1: 8497255
-# 1: 8497328
+# Current gpu job ids (nikola-compute-16)
+# stage1: 8508978
+# 1: 8508987
 
 # Current cpu job ids (dutta)
 # stage1: 8494770
@@ -256,15 +256,15 @@ jid2=$(sbatch \
   --account=dutta \
   --gres=gpu:a6000:1 \
   --partition=gpu \
-  --nodelist=nikola-compute-17 \
+  --nodelist=nikola-compute-16 \
   --job-name=pl_sample \
   --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=4 \
   --mem=24G \
-  --time=18:00:00 \
+  --time=23:00:00 \
   --output=logs/sample_%A.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_4 \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_5 \
   jobs/sample_array.sub | awk '{print $4}')
 
 sinfo -p gpu -N -o '%N %T %G' | awk '/gpu:h100/ && $2 ~ /idle|mix/'
