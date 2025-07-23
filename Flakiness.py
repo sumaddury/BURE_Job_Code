@@ -91,13 +91,16 @@ if __name__ == "__main__":
     
     args = p.parse_args()
 
+    def assertion_id(tup):
+        return f"{tup.testname}_{tup.line_number}"
+
     if args.cmd == "sample_csv":
         t1 = time.time() / 60.0
         seed_configs = [s.strip() for s in args.seed_config_names.split(';') if s.strip()]
         tests = read_csv(args.csv_in, keep_default_na=False)
         if args.assertions:
             ASSERTIONS = set(s.strip() for s in args.assertions.split(",") if s.strip())
-            test_tups = [(idx, tup) for idx, tup in enumerate(tests.itertuples()) if tup.testname in ASSERTIONS]
+            test_tups = [(idx, tup) for idx, tup in enumerate(tests.itertuples()) if assertion_id(tup) in ASSERTIONS]
         else:
             test_tups = list(enumerate(tests.itertuples()))
         for t in test_tups:
