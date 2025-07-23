@@ -134,7 +134,7 @@ mv pl-pipeline.sif     /share/dutta/$USER/containers/
 mv flaky-sandbox/      /share/dutta/$USER/containers/
 
 sinfo -p dutta -o "%n %C %m"
-sinfo -N -n nikola-compute-16 -o "%n %G"
+sinfo -N -p dutta -o "%n %G"
 
 nlplarge-compute-01
 #cpu
@@ -152,6 +152,7 @@ jid1=$(sbatch \
 jid1=$(sbatch \
   --gres=gpu:h100:1 \
   --account=dutta \
+  --partition=dutta \
   --ntasks=1 --cpus-per-task=2 --mem=8G --time=01:00:00 \
   --job-name=pl_stage1 \
   --output=logs/stage1_%j.out \
@@ -242,14 +243,14 @@ jid2=$(sbatch \
   --account=dutta \
   --partition=dutta \
   --job-name=pl_sample \
-  --dependency=afterok:8496099 \
+  --dependency=afterok:$jid1 \
   --ntasks=1 \
   --cpus-per-task=4 \
   --mem=24G \
   --gres=gpu:h100:1 \
   --time=48:00:00 \
   --output=logs/sample_%A.out \
-  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=8496099,OUTDIR=pyro_dists_2 \
+  --export=ALL,IMG=/share/dutta/$USER/containers/pl-pipeline.sif,PATH=/share/apps/singularity/3.7.0/bin:$PATH,DEP_JOB_ID=$jid1,OUTDIR=pyro_dists_1 \
   jobs/sample_array.sub | awk '{print $4}')
 
 jid2=$(sbatch \
